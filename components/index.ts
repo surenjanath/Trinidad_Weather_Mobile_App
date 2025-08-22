@@ -4,7 +4,6 @@ export { default as DetailedWeatherScreen } from './screens/DetailedWeatherScree
 export { default as AboutScreen } from './screens/AboutScreen';
 
 // Navigation Components
-export { default as PageHeader } from './navigation/PageHeader';
 export { default as NavigationDots } from './navigation/NavigationDots';
 export { default as SwipeHint } from './navigation/SwipeHint';
 

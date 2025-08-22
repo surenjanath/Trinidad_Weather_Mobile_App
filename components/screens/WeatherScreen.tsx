@@ -8,11 +8,10 @@ import {
   TouchableOpacity,
   ActivityIndicator
 } from 'react-native';
-import { Cloud, Wind, Moon } from 'lucide-react-native';
-import { WeatherForecast } from '@/types/weather';
+import { Cloud, Wind, Moon, Sun, Waves, Thermometer } from 'lucide-react-native';
 
 interface WeatherScreenProps {
-  forecast: WeatherForecast;
+  forecast: any; // Using any for now since we're working with your API structure
   isRefreshing: boolean;
   onRefresh: () => void;
   getCurrentTime: () => string;
@@ -28,6 +27,9 @@ export default function WeatherScreen({
   getCurrentDate, 
   getDayAbbreviation 
 }: WeatherScreenProps) {
+  // Extract data from your API structure
+  const weatherData = forecast?.items?.[0] || {};
+  
   return (
     <ScrollView
       style={styles.scrollView}
@@ -49,7 +51,7 @@ export default function WeatherScreen({
           {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
         </Text>
         <Text style={styles.weatherSummary}>
-          {forecast.general_synopsis} · {Math.round((forecast.piarco_max + forecast.piarco_min) / 2)}°C
+          {weatherData.forecastPeriod || 'Tonight and Tomorrow'} · {weatherData.PiarcoFcstMxTemp || '32'}°C
         </Text>
       </View>
 
@@ -78,30 +80,58 @@ export default function WeatherScreen({
       {/* Current Weather Display - Minimal */}
       <View style={styles.mainWeatherContainer}>
         <Text style={styles.temperatureText}>
-          {Math.round((forecast.piarco_max + forecast.piarco_min) / 2)}°
+          {weatherData.PiarcoFcstMxTemp || '32'}°
         </Text>
         <Text style={styles.locationText}>Trinidad & Tobago</Text>
+        <Text style={styles.forecastText}>
+          {weatherData.textArea1?.split('Tomorrow:')[0]?.replace('Tonight:', '').trim() || 'Fair and hazy intervals'}
+        </Text>
         <View style={styles.weatherDivider} />
       </View>
 
       {/* Weather Details - Clean Grid */}
       <View style={styles.weatherGrid}>
         <View style={styles.weatherCard}>
-          <Cloud size={18} color="rgba(255, 255, 255, 0.8)" />
-          <Text style={styles.cardLabel}>Conditions</Text>
-          <Text style={styles.cardValue}>{forecast.general_synopsis}</Text>
+          <Thermometer size={18} color="rgba(255, 255, 255, 0.8)" />
+          <Text style={styles.cardLabel}>Piarco</Text>
+          <Text style={styles.cardValue}>{weatherData.PiarcoFcstMnTemp || '24'}° / {weatherData.PiarcoFcstMxTemp || '32'}°</Text>
         </View>
         
         <View style={styles.weatherCard}>
-          <Wind size={18} color="rgba(255, 255, 255, 0.8)" />
-          <Text style={styles.cardLabel}>Wind</Text>
-          <Text style={styles.cardValue}>11 km/h</Text>
+          <Thermometer size={18} color="rgba(255, 255, 255, 0.8)" />
+          <Text style={styles.cardLabel}>Crown Point</Text>
+          <Text style={styles.cardValue}>{weatherData.CrownFcstMnTemp || '26'}° / {weatherData.CrownFcstMxTemp || '30'}°</Text>
         </View>
         
         <View style={styles.weatherCard}>
-          <Moon size={18} color="rgba(255, 255, 255, 0.8)" />
-          <Text style={styles.cardLabel}>Sunset</Text>
-          <Text style={styles.cardValue}>{forecast.sunset_time}</Text>
+          <Waves size={18} color="rgba(255, 255, 255, 0.8)" />
+          <Text style={styles.cardLabel}>Seas</Text>
+          <Text style={styles.cardValue}>{weatherData.seas || 'Moderate'}</Text>
+        </View>
+      </View>
+
+      {/* Additional Weather Info - Minimal */}
+      <View style={styles.additionalInfo}>
+        <View style={styles.infoRow}>
+          <View style={styles.infoItem}>
+            <Sun size={16} color="rgba(255, 255, 255, 0.7)" />
+            <Text style={styles.infoText}>Sunrise {weatherData.sunrise || '5:56 AM'}</Text>
+          </View>
+          <View style={styles.infoItem}>
+            <Moon size={16} color="rgba(255, 255, 255, 0.7)" />
+            <Text style={styles.infoText}>Sunset {weatherData.sunset || '6:20 PM'}</Text>
+          </View>
+        </View>
+        
+        <View style={styles.infoRow}>
+          <View style={styles.infoItem}>
+            <Cloud size={16} color="rgba(255, 255, 255, 0.7)" />
+            <Text style={styles.infoText}>Rain {weatherData.probrainfall || '40'}%</Text>
+          </View>
+          <View style={styles.infoItem}>
+            <Wind size={16} color="rgba(255, 255, 255, 0.7)" />
+            <Text style={styles.infoText}>Waves {weatherData.waves1 || '1.5m to 2.0m'}</Text>
+          </View>
         </View>
       </View>
 
@@ -125,12 +155,12 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   timeContainer: {
-    marginTop: 25,
-    marginBottom: 20,
+    marginTop: 5,
+    marginBottom: 10,
     alignItems: 'center',
   },
   timeText: {
-    fontSize: 56,
+    fontSize: 50,
     fontFamily: 'Inter-Bold',
     color: '#FFFFFF',
     marginBottom: 8,
@@ -235,6 +265,18 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 3,
   },
+  forecastText: {
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    color: 'rgba(255, 255, 255, 0.8)',
+    textAlign: 'center',
+    maxWidth: 280,
+    lineHeight: 20,
+    marginBottom: 15,
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
   weatherDivider: {
     width: 60,
     height: 1,
@@ -274,6 +316,36 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     textAlign: 'center',
     textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  additionalInfo: {
+    marginBottom: 30,
+    paddingHorizontal: 10,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  infoItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    flex: 1,
+    marginHorizontal: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  infoText: {
+    fontSize: 13,
+    fontFamily: 'Inter-Medium',
+    color: 'rgba(255, 255, 255, 0.85)',
+    marginLeft: 8,
+    textShadowColor: 'rgba(0, 0, 0, 0.4)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
   },

@@ -18,7 +18,6 @@ import {
   WeatherScreen,
   DetailedWeatherScreen,
   AboutScreen,
-  PageHeader,
   NavigationDots,
   SwipeHint
 } from '@/components';
@@ -97,10 +96,7 @@ export default function WeatherApp() {
             </View>
           )}
 
-          {/* Page Header - Hidden on About page */}
-          {!isAboutPage && (
-            <PageHeader currentPage={currentPage} />
-          )}
+
 
           {/* Page Content */}
           {currentPage === 0 && (
@@ -159,7 +155,7 @@ const styles = StyleSheet.create({
   },
   appHeader: {
     paddingTop: 50,
-    paddingBottom: 5,
+    paddingBottom: 1,
     alignItems: 'center',
   },
   appTitle: {
